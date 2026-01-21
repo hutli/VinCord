@@ -1,0 +1,11 @@
+{
+  "type": "code",
+  "modid": "VinCord",
+  "name": "VinCord - Server Discord Plugin",
+  "authors": ["hutli"],
+  "description": "",
+  "version": "1.0.0",
+  "dependencies": {
+    "game": ""
+  }
+}
