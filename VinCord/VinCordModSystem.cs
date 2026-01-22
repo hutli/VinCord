@@ -43,6 +43,18 @@ namespace VinCord
                 api.StoreModConfig<VinCordConfig>(config, "VinCord.json");
             }
 
+            if (config.DiscordToken == "")
+            {
+                api.Server.LogError("[VinCord] Discord token not provided - exiting!");
+                Dispose();
+                return;
+            }
+            if (config.DefaultChannel.DiscordChannel == 0)
+            {
+                api.Server.LogError("[VinCord] default Discord channel not provided - exiting!");
+                Dispose();
+                return;
+            }
             StartDiscord().Wait();
         }
 
