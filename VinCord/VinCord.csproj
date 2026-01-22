@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <OutputPath>bin\$(Configuration)\Mods\mod</OutputPath>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="VintagestoryAPI">
@@ -60,17 +61,17 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Discord.Net"
-                          Version="3.18.0" />
+            Version="3.18.0" />
     </ItemGroup>
     <Target Name="Package"
-            AfterTargets="PostBuildEvent"
-            Condition="'$(Configuration)' == 'Release'">
+        AfterTargets="PostBuildEvent"
+        Condition="'$(Configuration)' == 'Release'">
         <Message Text="Deleting $(TargetDir)$(TargetName).deps.json" />
         <Delete Files="$(TargetDir)$(TargetName).deps.json" />
         <Message Text="Deleting $(TargetDir)$(TargetName).pdb" />
         <Delete Files="$(TargetDir)$(TargetName).pdb" />
         <ZipDirectory DestinationFile="bin/$(TargetName).zip"
-                      SourceDirectory="$(TargetDir)"
-                      Overwrite="true" />
+            SourceDirectory="$(TargetDir)"
+            Overwrite="true" />
     </Target>
 </Project>
