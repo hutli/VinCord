@@ -329,7 +329,7 @@ namespace VinCord
         EnumMoonPhase.Grow3 => "🌔",
         EnumMoonPhase.Shrink1 => "🌘",
         EnumMoonPhase.Shrink2 => "🌗",
-        EnumMoonPhase.Shrink3 => "🌘",
+        EnumMoonPhase.Shrink3 => "🌖",
         _ => "🌚"
       };
     }
