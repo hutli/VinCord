@@ -318,25 +318,6 @@ namespace VinCord
         _ => $"{month}"
       };
     }
-    private string MonthMessage(int month)
-    {
-      return month switch
-      {
-        1 => "January is here - Happy New Year! What will the new year bring?",
-        2 => "February is here - Last month of the winter, you can do this!",
-        3 => "March is here - Spring has started, let's get planting!",
-        4 => "April is here - Please no more snow!",
-        5 => "May is here - Last month of the spring, I hope you have those crops in the ground!",
-        6 => "June is here - Summer has started, you want to go to the beach?",
-        7 => "July is here - This heat is almost making me miss winter.",
-        8 => "August is here - Last month of the Summer, enjoy the weather while you can!",
-        9 => "September is here - Autumn has arrived, better start stocking up on food.",
-        10 => "October is here - What to wear for halloween?",
-        11 => "November is here - Last month of Autumn, do you have enough food?",
-        12 => "December is here - First month of Winter, hope the cellar is stocked.",
-        _ => ""
-      };
-    }
     private string MoonToEmoji(EnumMoonPhase moonPhase)
     {
       return moonPhase switch
@@ -374,8 +355,12 @@ namespace VinCord
       DateTime dateTime = GetInGameDateTime();
       if (dateTime.Month != currentMonth)
       {
-        api.BroadcastMessageToAllGroups(MonthMessage(dateTime.Month), EnumChatType.Notification);
-        await channel.SendMessageAsync($"## `{MonthMessage(dateTime.Month)}`");
+        string monthMessage = config.MonthMessages.GetValueOrDefault(dateTime.Month);
+        if (monthMessage == string.Empty)
+        {
+          api.BroadcastMessageToAllGroups(monthMessage, EnumChatType.Notification);
+          await channel.SendMessageAsync($"## `{monthMessage}`");
+        }
         currentMonth = dateTime.Month;
       }
 
