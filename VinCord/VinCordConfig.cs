@@ -1,26 +1,29 @@
 using System.Collections.Generic;
+using Vintagestory.API.MathTools;
 
 namespace VinCord
 {
-  public class ChannelOverride
-  {
-    public ulong DiscordChannel { get; set; } = 0;
-    public bool ChatToDiscord { get; set; } = true;
-    public bool ChatToGame { get; set; } = true;
-  }
-  public class VinCordConfig
-  {
-    public string DiscordToken { get; set; } = "";
-    public ChannelOverride DefaultChannel { get; set; } = new ChannelOverride();
-    public double MinPresenceUpdateWait { get; set; } = 20.0;
-    public string[] IgnoreDiscordUsers { get; set; } = new string[] { };
-    public string PlayerJoinMessage { get; set; } = "**[{0}]** `joined 👋`";
-    public string PlayerLeaveMessage { get; set; } = "**[{0}]** `left ✌️`";
-    public string ServerStartMessage { get; set; } = "# `🎉Server started!🎉`";
-    public string ServerShutdownMessage { get; set; } = "# `‼️Server shutdown‼️`";
-    public Dictionary<int, string> MonthMessages { get; set; } =
-        new Dictionary<int, string>
-        {
+    public class ChannelOverride
+    {
+        public ulong DiscordChannel { get; set; } = 0;
+        public bool ChatToDiscord { get; set; } = true;
+        public bool ChatToGame { get; set; } = true;
+    }
+    public class VinCordConfig
+    {
+        public string DiscordToken { get; set; } = "";
+        public ChannelOverride DefaultChannel { get; set; } = new ChannelOverride();
+        public BlockPos HomeLocation { get; set; } = null;
+        public string DefaultNickname { get; set; } = "";
+        public double MinPresenceUpdateWait { get; set; } = 20.0;
+        public string[] IgnoreDiscordUsers { get; set; } = new string[] { };
+        public string PlayerJoinMessage { get; set; } = "**[{0}]** `joined 👋`";
+        public string PlayerLeaveMessage { get; set; } = "**[{0}]** `left ✌️`";
+        public string ServerStartMessage { get; set; } = "# `🎉Server started!🎉`";
+        public string ServerShutdownMessage { get; set; } = "# `‼️Server shutdown‼️`";
+        public Dictionary<int, string> MonthMessages { get; set; } =
+            new Dictionary<int, string>
+            {
           {1, "January is here - Happy New Year! What will the new year bring?"},
           {2, "February is here - Last month of the winter, you can do this!"},
           {3, "March is here - Spring has started, let's get planting!"},
@@ -33,16 +36,16 @@ namespace VinCord
           {10, "October is here - What to wear for halloween?"},
           {11, "November is here - Last month of Autumn, do you have enough food?"},
           {12, "December is here - First month of Winter, hope the cellar is stocked."}
-        };
-    public bool PlayerDeathToDiscord { get; set; } = true;
-    public bool AllowMentions { get; set; } = false;
-    public Dictionary<string, string> LogScrapeRegexes { get; set; } =
-        new Dictionary<string, string>
-        {
-          [@"^Message to all in group 0: (A .* temporal storm is imminent)$"] = @"$1",
-          [@"^Message to all in group 0: (The temporal storm seems to be waning)$"] = @"$1",
-          [@"^(All clients disconnected, pausing game calendar.)$"] = @"$1",
-          [@"^(A client reconnected, resuming game calendar.)$"] = @"$1"
-        };
-  }
+            };
+        public bool PlayerDeathToDiscord { get; set; } = true;
+        public bool AllowMentions { get; set; } = false;
+        public Dictionary<string, string> LogScrapeRegexes { get; set; } =
+            new Dictionary<string, string>
+            {
+                [@"^Message to all in group 0: (A .* temporal storm is imminent)$"] = @"$1",
+                [@"^Message to all in group 0: (The temporal storm seems to be waning)$"] = @"$1",
+                [@"^(All clients disconnected, pausing game calendar.)$"] = @"$1",
+                [@"^(A client reconnected, resuming game calendar.)$"] = @"$1"
+            };
+    }
 }
