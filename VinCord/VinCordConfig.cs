@@ -17,10 +17,14 @@ namespace VinCord
         public string DefaultNickname { get; set; } = "";
         public double MinPresenceUpdateWait { get; set; } = 20.0;
         public string[] IgnoreDiscordUsers { get; set; } = new string[] { };
+        public bool PlayerDeathToDiscord { get; set; } = true;
+        public bool AllowMentions { get; set; } = false;
         public string PlayerJoinMessage { get; set; } = "**[{0}]** `joined 👋`";
         public string PlayerLeaveMessage { get; set; } = "**[{0}]** `left ✌️`";
         public string ServerStartMessage { get; set; } = "# `🎉Server started!🎉`";
         public string ServerShutdownMessage { get; set; } = "# `‼️Server shutdown‼️`";
+        public string MoonFullMessage { get; set; } = "A full moon rises - do you hear the howling?";
+        public string MoonWainingMessage { get; set; } = "The full moon is waining - the night is quiet again...";
         public Dictionary<int, string> MonthMessages { get; set; } =
             new Dictionary<int, string>
             {
@@ -37,8 +41,6 @@ namespace VinCord
           {11, "November is here - Last month of Autumn, do you have enough food?"},
           {12, "December is here - First month of Winter, hope the cellar is stocked."}
             };
-        public bool PlayerDeathToDiscord { get; set; } = true;
-        public bool AllowMentions { get; set; } = false;
         public Dictionary<string, string> LogScrapeRegexes { get; set; } =
             new Dictionary<string, string>
             {

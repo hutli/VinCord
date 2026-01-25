@@ -126,13 +126,13 @@ namespace VinCord
             return moonPhase switch
             {
                 EnumMoonPhase.Empty => "🌑",
-                EnumMoonPhase.Full => "🌕",
                 EnumMoonPhase.Grow1 => "🌒",
                 EnumMoonPhase.Grow2 => "🌓",
                 EnumMoonPhase.Grow3 => "🌔",
-                EnumMoonPhase.Shrink1 => "🌘",
+                EnumMoonPhase.Full => "🌕",
+                EnumMoonPhase.Shrink1 => "🌖",
                 EnumMoonPhase.Shrink2 => "🌗",
-                EnumMoonPhase.Shrink3 => "🌖",
+                EnumMoonPhase.Shrink3 => "🌘",
                 _ => "🌚"
             };
         }

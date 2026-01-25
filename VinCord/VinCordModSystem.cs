@@ -25,6 +25,7 @@ namespace VinCord
         private VinCordService vincordService;
 
         private int currentMonth = 0;
+        private Nullable<EnumMoonPhase> currentMoonPhase = null;
         public SocketTextChannel channel = null;
 
         public override void StartServerSide(ICoreServerAPI api)
@@ -103,7 +104,7 @@ namespace VinCord
             }
             catch (HttpException ex)
             {
-                var json = JsonConvert.SerializeObject(ex.Errors, Formatting.Indented);
+                string json = JsonConvert.SerializeObject(ex.Errors, Formatting.Indented);
                 api.Server.LogError($"[VinCord] failed to register commands: {json}");
             }
 
@@ -129,10 +130,10 @@ namespace VinCord
             try
             {
                 // Create an execution context for the interaction
-                var ctx = new SocketInteractionContext(client, interaction);
+                SocketInteractionContext ctx = new(client, interaction);
 
                 // Execute the command
-                var result = await interactionService.ExecuteCommandAsync(ctx, services);
+                IResult result = await interactionService.ExecuteCommandAsync(ctx, services);
 
                 if (!result.IsSuccess)
                 {
@@ -221,6 +222,7 @@ namespace VinCord
         private void OnRunGame()
         {
             currentMonth = GetInGameDateTime().Month;
+            currentMoonPhase = api.World.Calendar.MoonPhase;
             double secondsPerMinute = 60.0 / (api.World.Calendar.SpeedOfTime * api.World.Calendar.CalendarSpeedMul);
             if (secondsPerMinute < config.MinPresenceUpdateWait)
             {
@@ -329,6 +331,42 @@ namespace VinCord
             12 => "dec",
             _ => $"{month}"
         };
+
+        private async Task CheckMoon()
+        {
+            string moonMessage = null;
+            if (currentMoonPhase.HasValue &&
+                api.World.Calendar.MoonPhase == EnumMoonPhase.Full &&
+                currentMoonPhase.Value != EnumMoonPhase.Full)
+            {
+                moonMessage = config.MoonFullMessage;
+            }
+            if (currentMoonPhase.HasValue &&
+                api.World.Calendar.MoonPhase != EnumMoonPhase.Full &&
+                currentMoonPhase.Value == EnumMoonPhase.Full)
+            {
+                moonMessage = config.MoonWainingMessage;
+            }
+            if (!string.IsNullOrEmpty(moonMessage))
+            {
+                api.BroadcastMessageToAllGroups(moonMessage, EnumChatType.Notification);
+                await channel.SendMessageAsync($"`{moonMessage}`");
+            }
+            currentMoonPhase = api.World.Calendar.MoonPhase;
+        }
+        private async Task CheckMonth(DateTime dateTime)
+        {
+            if (dateTime.Month != currentMonth)
+            {
+                string monthMessage = config.MonthMessages.GetValueOrDefault(dateTime.Month);
+                if (!string.IsNullOrEmpty(monthMessage))
+                {
+                    api.BroadcastMessageToAllGroups(monthMessage, EnumChatType.Notification);
+                    await channel.SendMessageAsync($"`{monthMessage}`");
+                }
+                currentMonth = dateTime.Month;
+            }
+        }
         private DateTime GetInGameDateTime()
         {
             double doubleHour = api.World.Calendar.HourOfDay;
@@ -344,23 +382,13 @@ namespace VinCord
         private async void UpdatePresence(int adjust = 0)
         {
             if (client == null) return;
-
             ClimateCondition climate = vincordService.GetHomeClimate();
 
-            int count = api.World.AllOnlinePlayers.Length + adjust;
             DateTime dateTime = GetInGameDateTime();
-            if (dateTime.Month != currentMonth)
-            {
-                string monthMessage = config.MonthMessages.GetValueOrDefault(dateTime.Month);
-                if (!string.IsNullOrEmpty(monthMessage))
-                {
-                    api.BroadcastMessageToAllGroups(monthMessage, EnumChatType.Notification);
-                    await channel.SendMessageAsync($"`{monthMessage}`");
-                }
-                currentMonth = dateTime.Month;
-            }
+            await CheckMonth(dateTime);
+            await CheckMoon();
 
-            string message = $"{count} online | {dateTime.Hour:D2}:{dateTime.Minute:D2}, {dateTime.Day}. {FormatMonth(dateTime.Month)}, Y{dateTime.Year}";
+            string message = $"{api.World.AllOnlinePlayers.Length + adjust} online | {dateTime.Hour:D2}:{dateTime.Minute:D2}, {dateTime.Day}. {FormatMonth(dateTime.Month)}, Y{dateTime.Year}";
 
             // Include weather info if home location is set
             if (climate != null)
@@ -372,13 +400,12 @@ namespace VinCord
 
             if (user != null)
             {
-                string moonEmoji = vincordService.GetMoonEmoji(api.World.Calendar.MoonPhase);
-
                 // Use configured nickname or fall back to bot's username
                 string baseName = !string.IsNullOrEmpty(config.DefaultNickname)
                     ? config.DefaultNickname
                     : user.Username;
 
+                string moonEmoji = vincordService.GetMoonEmoji(api.World.Calendar.MoonPhase);
                 string nickname;
 
                 // Include weather info if home location is set
