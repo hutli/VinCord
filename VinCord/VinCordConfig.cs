@@ -13,6 +13,7 @@ namespace VinCord
   {
     public string DiscordToken { get; set; } = "";
     public ChannelOverride DefaultChannel { get; set; } = new ChannelOverride();
+    public ulong DefaultGuild { get; set; } = 0;
     public BlockPos HomeLocation { get; set; } = null;
     public string DefaultNickname { get; set; } = "";
     public double MinPresenceUpdateWait { get; set; } = 20.0;

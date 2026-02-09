@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -223,22 +224,27 @@ namespace VinCord
 
     private void OnRunGame()
     {
+
       currentMonth = GetInGameDateTime().Month;
       currentMoonPhase = api.World.Calendar.MoonPhase;
-      double secondsPerMinute = 60.0 / (api.World.Calendar.SpeedOfTime * api.World.Calendar.CalendarSpeedMul);
-      if (secondsPerMinute < config.MinPresenceUpdateWait)
-      {
-        api.Server.LogWarning($"[VinCord] Seconds per game minute is faster than Discord rate limit, using {config.MinPresenceUpdateWait}s interval.");
-        api.Event.Timer(() => UpdatePresence(), config.MinPresenceUpdateWait);
-      }
+      double presenceUpdateWait = config.MinPresenceUpdateWait;
+      if (api.World.Calendar.SpeedOfTime == 0)
+        api.Server.LogWarning($"[VinCord] Game is paused! Cannot calculate seconds per game minute so using {presenceUpdateWait}s interval.");
       else
       {
-        api.Event.Timer(() => UpdatePresence(), secondsPerMinute);
+        double secondsPerMinute = 60.0 / (api.World.Calendar.SpeedOfTime * api.World.Calendar.CalendarSpeedMul);
+        if (secondsPerMinute < config.MinPresenceUpdateWait)
+          api.Server.LogWarning($"[VinCord] Seconds per game minute ({secondsPerMinute}s) is faster than Discord rate limit, using {presenceUpdateWait}s interval.");
+        else
+        {
+          api.Server.LogNotification($"[VinCord] Updating presence every {secondsPerMinute}s");
+          presenceUpdateWait = secondsPerMinute;
+        }
       }
-      if (channel == null) return;
-      if (config.ServerStartMessage.Length == 0) return;
+      api.Event.Timer(() => UpdatePresence(), presenceUpdateWait);
 
-      channel.SendMessageAsync(config.ServerStartMessage);
+      if (channel != null && config.ServerStartMessage.Length > 0)
+        channel.SendMessageAsync(config.ServerStartMessage);
     }
     private Task DiscordMessageReceived(SocketMessage arg)
     {
@@ -388,11 +394,11 @@ namespace VinCord
 
       int playersOnline = api.World.AllOnlinePlayers.Length + adjust;
       string message = $"{playersOnline} online | {dateTime.Hour:D2}:{dateTime.Minute:D2}, {dateTime.Day}. {FormatMonth(dateTime.Month)}, Y{dateTime.Year}";
-      if (playersOnline == 0 && this.previousPlayersOnline > 0)
+      if (config.PausingCalendarMessage.Length > 0 && playersOnline == 0 && this.previousPlayersOnline > 0)
       {
         await channel.SendMessageAsync($"`{config.PausingCalendarMessage}`");
       }
-      else if (playersOnline > 0 && this.previousPlayersOnline == 0)
+      else if (config.ResumingCalendarMessage.Length > 0 && playersOnline > 0 && this.previousPlayersOnline == 0)
       {
         await channel.SendMessageAsync($"`{config.ResumingCalendarMessage}`");
       }
@@ -403,7 +409,7 @@ namespace VinCord
       {
         message += $" | {(int)Math.Round(climate.Temperature)}℃";
       }
-      SocketGuild guild = client.GetGuild(986622601445138472);
+      SocketGuild guild = client.GetGuild(config.DefaultGuild);
       SocketGuildUser user = guild?.GetUser(client.CurrentUser.Id);
 
       if (user != null)
@@ -429,6 +435,7 @@ namespace VinCord
 
         if (user.Nickname != nickname)
         {
+          api.Server.LogNotification($"[VinCord] setting nickname to \"{nickname}\"");
           await user.ModifyAsync(x => x.Nickname = nickname);
         }
       }
